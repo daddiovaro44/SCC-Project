@@ -39,10 +39,8 @@ def _TestModel():
     #model = DecisionTreeClassifier(max_depth=3)
     #model = RandomForestClassifier(n_estimators=1000)
     model = LogisticRegression(max_iter=5000)
-    i=0
-    while i<10000:
-        model.fit(x_train, y_train)
-        i+=1
+    model.fit(x_train, y_train)
+
 
     # Get predictions
     y_pred = model.predict(x_test)
