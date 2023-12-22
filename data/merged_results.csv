@@ -1,4 +1,4 @@
-,Compound,TyreLife,FreshTyre,Position,GridPosition,Round,Year,AirTemp,Humidity,Pressure,Rainfall,TrackTemp,WindSpeed
+,Compound,TyreLife,Position,GridPosition,Round,Year,AirTemp,Humidity,Pressure,Rainfall,TrackTemp,WindSpeed
 0,1,1.0,11.0,17.0,1,2019,23.2,72.2,1015.5,0,42.9,0.9
 1,0,4.0,13.0,10.0,1,2019,23.2,72.2,1015.5,0,42.9,0.9
 2,0,4.0,5.0,5.0,1,2019,23.2,72.2,1015.5,0,42.9,0.9
