@@ -4,15 +4,16 @@ import pandas as pd
 from PIL import Image
 import csv
 
-@st.cache_data
-def load(model_path):
+# @st.cache_data
+def load_model(model_path):
     model = load(model_path)
     return model
 
 def inference(row, model, feat_cols):
     features = pd.DataFrame([row], columns = feat_cols)
     
-    prediction = model.predict(features)
+    prediction = int(model.predict(features))
+    
     if prediction == 0:
         return 'SOFT'
     elif prediction == 1:
@@ -25,19 +26,16 @@ def inference(row, model, feat_cols):
         return 'HARD'
 
 st.title('Formula 1 Tyre Compound Prediction App')
-st.write('')
+st.write('Data are collected from https://github.com/theOehrly/Fast-F1/tree/master?tab=readme-ov-file')
 
-# video_file = open('myvideo.mp4', 'rb')
-# video_bytes = video_file.read()
-# st.video(video_bytes)
+st.video('https://www.youtube.com/watch?v=3BEHQEiDgW0')
 
-st.write('Please fill in')
+st.write('Please fill in elements in the side bar')
 
 # [Compound] TyreLife,Position,GridPosition,Round,Year,AirTemp,Humidity,Pressure,Rainfall,TrackTemp,WindSpeed
 
 laps = [str(x) for x in range(0, 51)]
 positions = [str(x) for x in range(1, 21)]
-
 
 tyrelife = st.sidebar.selectbox('Choose tyre age', laps)
 position = st.sidebar.selectbox('Choose finish grid position', positions)
@@ -65,6 +63,6 @@ if (st.button('Guess Tyre to Start the race with')):
     feat_cols = ['TyreLife', 'Position', 'GridPosition', 'Round', 'Year', 'AirTemp', 
                  'Humidity', 'Pressure', 'Rainfall', 'TrackTemp', 'WindSpeed']
 
-    model = load('./models/logisticregression.joblib')
+    model = load_model('./models/logisticregression.joblib')
     result = inference(row, model, feat_cols)
     st.write(result)
