@@ -1,43 +1,70 @@
 import streamlit as st
-import joblib
+from joblib import load
 import pandas as pd
 from PIL import Image
+import csv
 
-@st.cache(allow_output_mutation=True)
-def load(scaler_path, model_path):
-    sc = joblib.load(scaler_path)
-    model = joblib.load(model_path)
-    return sc, model
+@st.cache_data
+def load(model_path):
+    model = load(model_path)
+    return model
 
-def inference(row, scaler, model, feat_cols):
-    df = pd.DataFrame([row], columns = feat_cols)
-    X = scaler.transform(df)
-    features = pd.DataFrame(X, columns = feat_cols)
-    if (model.predict(features)==0):
-        return "This is a healthy person!"
-    else:
-        return "This person has high chances of having diabetics!"
+def inference(row, model, feat_cols):
+    features = pd.DataFrame([row], columns = feat_cols)
+    
+    prediction = model.predict(features)
+    if prediction == 0:
+        return 'SOFT'
+    elif prediction == 1:
+        return 'MEDIUM'
+    elif prediction == 2:
+        return 'HARD'
+    elif prediction == 3:
+        return 'INTERMEDIATE'
+    elif prediction == 4:
+        return 'HARD'
 
-st.title('Diabetes Prediction App')
-st.write('The data for the following example is originally from the National Institute of Diabetes and Digestive and Kidney Diseases and contains information on females at least 21 years old of Pima Indian heritage. This is a sample application and cannot be used as a substitute for real medical advice.')
-image = Image.open('data/diabetes_image.jpg')
-st.image(image, use_column_width=True)
-st.write('Please fill in the details of the person under consideration in the left sidebar and click on the button below!')
+st.title('Formula 1 Tyre Compound Prediction App')
+st.write('')
 
-age =           st.sidebar.number_input("Age in Years", 1, 150, 25, 1)
-pregnancies =   st.sidebar.number_input("Number of Pregnancies", 0, 20, 0, 1)
-glucose =       st.sidebar.slider("Glucose Level", 0, 200, 25, 1)
-skinthickness = st.sidebar.slider("Skin Thickness", 0, 99, 20, 1)
-bloodpressure = st.sidebar.slider('Blood Pressure', 0, 122, 69, 1)
-insulin =       st.sidebar.slider("Insulin", 0, 846, 79, 1)
-bmi =           st.sidebar.slider("BMI", 0.0, 67.1, 31.4, 0.1)
-dpf =           st.sidebar.slider("Diabetics Pedigree Function", 0.000, 2.420, 0.471, 0.001)
+# video_file = open('myvideo.mp4', 'rb')
+# video_bytes = video_file.read()
+# st.video(video_bytes)
 
-row = [pregnancies, glucose, bloodpressure, skinthickness, insulin, bmi, dpf, age]
+st.write('Please fill in')
 
-if (st.button('Find Health Status')):
-    feat_cols = ['Pregnancies', 'Glucose', 'BloodPressure', 'SkinThickness', 'Insulin', 'BMI', 'DiabetesPedigreeFunction', 'Age']
+# [Compound] TyreLife,Position,GridPosition,Round,Year,AirTemp,Humidity,Pressure,Rainfall,TrackTemp,WindSpeed
 
-    sc, model = load('models/scaler.joblib', 'models/model.joblib')
-    result = inference(row, sc, model, feat_cols)
+laps = [str(x) for x in range(0, 51)]
+positions = [str(x) for x in range(1, 21)]
+
+
+tyrelife = st.sidebar.selectbox('Choose tyre age', laps)
+position = st.sidebar.selectbox('Choose finish grid position', positions)
+gridposition = st.sidebar.selectbox('Choose starding grid position', positions)
+
+year = st.sidebar.selectbox('Choose year', ('2019', '2020', '2021', '2022', '2023'))
+
+gran_prix = pd.read_csv('./data/gran_prix.csv')
+races = gran_prix[year]
+round_name = st.sidebar.selectbox('Choose race', races)
+round = (gran_prix.index[gran_prix[year]==round_name]+1).item()
+
+airtemp = st.sidebar.slider('Air temperature in Celsius', min_value=1.0, max_value=40.0, value=35.5, step=0.1)
+humidity = st.sidebar.slider('Humidity %', min_value=0.0, max_value=100.0, step=0.1)
+pressure = st.sidebar.slider('Pressure in mbar', min_value=100.0, max_value=1100.0, step=0.1)
+
+rain = int(st.sidebar.checkbox('Rain'))
+
+tracktemp = st.sidebar.slider('Track temperature in Celsius', min_value=10.0, max_value=60.0, value=35.5, step=0.1)
+windspeed = st.sidebar.slider('Wind spee in m/s', min_value=1.0, max_value=10.0, step=0.1)
+
+row = [tyrelife, position, gridposition, round, year, airtemp, humidity, pressure, rain, tracktemp, windspeed]
+
+if (st.button('Guess Tyre to Start the race with')):
+    feat_cols = ['TyreLife', 'Position', 'GridPosition', 'Round', 'Year', 'AirTemp', 
+                 'Humidity', 'Pressure', 'Rainfall', 'TrackTemp', 'WindSpeed']
+
+    model = load('./models/logisticregression.joblib')
+    result = inference(row, model, feat_cols)
     st.write(result)
