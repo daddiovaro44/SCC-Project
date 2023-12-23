@@ -12,7 +12,9 @@ def load_model(model_path):
 def inference(row, model, feat_cols):
     features = pd.DataFrame([row], columns = feat_cols)
     
-    prediction = int(model.predict(features))
+    # prediction = int(model.predict(features))
+    prediction = model.predict(features)
+    prediction = int(prediction.item(0))
     
     if prediction == 0:
         return 'SOFT'
@@ -34,7 +36,7 @@ st.write('Please fill in elements in the side bar')
 
 # [Compound] TyreLife,Position,GridPosition,Round,Year,AirTemp,Humidity,Pressure,Rainfall,TrackTemp,WindSpeed
 
-laps = [str(x) for x in range(0, 51)]
+laps = [str(x) for x in range(0, 15)]
 positions = [str(x) for x in range(1, 21)]
 
 tyrelife = st.sidebar.selectbox('Choose tyre age', laps)
@@ -50,7 +52,7 @@ round = (gran_prix.index[gran_prix[year]==round_name]+1).item()
 
 airtemp = st.sidebar.slider('Air temperature in Celsius', min_value=1.0, max_value=40.0, value=35.5, step=0.1)
 humidity = st.sidebar.slider('Humidity %', min_value=0.0, max_value=100.0, step=0.1)
-pressure = st.sidebar.slider('Pressure in mbar', min_value=100.0, max_value=1100.0, step=0.1)
+pressure = st.sidebar.slider('Pressure in mbar', min_value=900.0, max_value=1100.0, step=0.1)
 
 rain = int(st.sidebar.checkbox('Rain'))
 
