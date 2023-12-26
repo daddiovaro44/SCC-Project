@@ -1,0 +1,24 @@
+name: Decision Tree classifier
+description: Trains a  decision tree classifier
+
+inputs:
+- {name: Data, type: LocalPath, description: 'Path where data is stored.'}
+outputs:
+- {name: Accuracy, type: Float, description: 'Accuracy metric'}
+- {name: Model, type: joblib, description: 'model'}
+implementation:
+  container:
+    image: gianluca12galasso/decision_tree
+    command: [
+      python, decision_tree.py,
+
+      --data,
+      {inputPath: Data},
+
+      --accuracy,
+      {outputPath: Accuracy},
+      
+      --model,
+      {outputPath: Model}
+
+    ]
