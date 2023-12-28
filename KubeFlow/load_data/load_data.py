@@ -9,7 +9,7 @@ from sklearn.model_selection import train_test_split
 def _load_data(args):
 
     # Gets and split dataset
-    df = pd.read_csv('./../../data/merged_results.csv')
+    df = pd.read_csv('F1.csv')
     y = df['Compound']
     x = df.drop('Compound', axis=1)
     x_train, x_test, y_train, y_test = train_test_split(x, y, test_size=0.2)
