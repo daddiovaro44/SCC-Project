@@ -1,0 +1,28 @@
+name: Random Forest classifier
+description: Trains a  decision tree classifier
+
+inputs:
+- {name: Data, type: LocalPath, description: 'Path where data is stored.'}
+outputs:
+- {name: Model, type: LocalPath, description: 'Model'}
+- {name: Accuracy, type: Float, description: 'Accuracy metric'}
+- {name: Best_param, type: String, description: 'Best parameters for model'}
+implementation:
+  container:
+    image: gianluca12galasso/random_forest
+    command: [
+      python, random_forest.py,
+
+      --data,
+      {inputPath: Data},
+
+      --model,
+      {outputPath: Model},
+      
+      --accuracy,
+      {outputPath: Accuracy},
+      
+      --best_param,
+      {outputPath: Best_param},
+
+    ]
