@@ -1,0 +1,267 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: f1-pipeline-
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.22, pipelines.kubeflow.org/pipeline_compilation_time: '2023-12-29T16:23:36.571486',
+    pipelines.kubeflow.org/pipeline_spec: '{"description": "Applies Decision Tree
+      and Logistic Regression for F1 classification problem.", "name": "F1 Pipeline"}'}
+  labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.22}
+spec:
+  entrypoint: f1-pipeline
+  templates:
+  - name: decision-tree-classifier
+    container:
+      args: []
+      command: [python, decision_tree.py, --data, /tmp/inputs/Data/data, --model,
+        /tmp/outputs/Model/data, --accuracy, /tmp/outputs/Accuracy/data, --best_param,
+        /tmp/outputs/Best_param/data]
+      image: gianluca12galasso/decision_tree
+    inputs:
+      artifacts:
+      - {name: load-data-function-Data, path: /tmp/inputs/Data/data}
+    outputs:
+      parameters:
+      - name: decision-tree-classifier-Accuracy
+        valueFrom: {path: /tmp/outputs/Accuracy/data}
+      - name: decision-tree-classifier-Best_param
+        valueFrom: {path: /tmp/outputs/Best_param/data}
+      artifacts:
+      - {name: decision-tree-classifier-Accuracy, path: /tmp/outputs/Accuracy/data}
+      - {name: decision-tree-classifier-Best_param, path: /tmp/outputs/Best_param/data}
+      - {name: decision-tree-classifier-Model, path: /tmp/outputs/Model/data}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.22
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"description": "Trains
+          a  decision tree classifier", "implementation": {"container": {"command":
+          ["python", "decision_tree.py", "--data", {"inputPath": "Data"}, "--model",
+          {"outputPath": "Model"}, "--accuracy", {"outputPath": "Accuracy"}, "--best_param",
+          {"outputPath": "Best_param"}], "image": "gianluca12galasso/decision_tree"}},
+          "inputs": [{"description": "Path where data is stored.", "name": "Data",
+          "type": "LocalPath"}], "name": "Decision Tree classifier", "outputs": [{"description":
+          "model", "name": "Model", "type": "LocalPath"}, {"description": "Accuracy
+          metric", "name": "Accuracy", "type": "Float"}, {"description": "Best parameters
+          for model", "name": "Best_param", "type": "String"}]}', pipelines.kubeflow.org/component_ref: '{"digest":
+          "8089e8a284c593050c4970aa7f8c50e34169a5949fbe7f127374a6347b71f972", "url":
+          "decision_tree/decision_tree.yaml"}'}
+  - name: f1-pipeline
+    dag:
+      tasks:
+      - name: decision-tree-classifier
+        template: decision-tree-classifier
+        dependencies: [load-data-function]
+        arguments:
+          artifacts:
+          - {name: load-data-function-Data, from: '{{tasks.load-data-function.outputs.artifacts.load-data-function-Data}}'}
+      - {name: load-data-function, template: load-data-function}
+      - name: logistic-regression-classifier
+        template: logistic-regression-classifier
+        dependencies: [load-data-function]
+        arguments:
+          artifacts:
+          - {name: load-data-function-Data, from: '{{tasks.load-data-function.outputs.artifacts.load-data-function-Data}}'}
+      - name: random-forest-classifier
+        template: random-forest-classifier
+        dependencies: [load-data-function]
+        arguments:
+          artifacts:
+          - {name: load-data-function-Data, from: '{{tasks.load-data-function.outputs.artifacts.load-data-function-Data}}'}
+      - name: show-results
+        template: show-results
+        dependencies: [decision-tree-classifier, logistic-regression-classifier, random-forest-classifier]
+        arguments:
+          parameters:
+          - {name: decision-tree-classifier-Accuracy, value: '{{tasks.decision-tree-classifier.outputs.parameters.decision-tree-classifier-Accuracy}}'}
+          - {name: decision-tree-classifier-Best_param, value: '{{tasks.decision-tree-classifier.outputs.parameters.decision-tree-classifier-Best_param}}'}
+          - {name: logistic-regression-classifier-Accuracy, value: '{{tasks.logistic-regression-classifier.outputs.parameters.logistic-regression-classifier-Accuracy}}'}
+          - {name: logistic-regression-classifier-Best_param, value: '{{tasks.logistic-regression-classifier.outputs.parameters.logistic-regression-classifier-Best_param}}'}
+          - {name: random-forest-classifier-Accuracy, value: '{{tasks.random-forest-classifier.outputs.parameters.random-forest-classifier-Accuracy}}'}
+          - {name: random-forest-classifier-Best_param, value: '{{tasks.random-forest-classifier.outputs.parameters.random-forest-classifier-Best_param}}'}
+  - name: load-data-function
+    container:
+      args: []
+      command: [python, load_data.py, --data, /tmp/outputs/Data/data]
+      image: gianluca12galasso/load_data
+    outputs:
+      artifacts:
+      - {name: load-data-function-Data, path: /tmp/outputs/Data/data}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.22
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"description": "Load
+          data from local dataset", "implementation": {"container": {"command": ["python",
+          "load_data.py", "--data", {"outputPath": "Data"}], "image": "gianluca12galasso/load_data"}},
+          "name": "Load Data Function", "outputs": [{"description": "Path where data
+          will be stored.", "name": "Data", "type": "LocalPath"}]}', pipelines.kubeflow.org/component_ref: '{"digest":
+          "e3c798a431f30db216f590dd561c1b3f168668a70784337dbcc80b50cc61f7ac", "url":
+          "load_data/load_data.yaml"}'}
+  - name: logistic-regression-classifier
+    container:
+      args: []
+      command: [python, logistic_regression.py, --data, /tmp/inputs/Data/data, --model,
+        /tmp/outputs/Model/data, --accuracy, /tmp/outputs/Accuracy/data, --best_param,
+        /tmp/outputs/Best_param/data]
+      image: gianluca12galasso/logistic_regression
+    inputs:
+      artifacts:
+      - {name: load-data-function-Data, path: /tmp/inputs/Data/data}
+    outputs:
+      parameters:
+      - name: logistic-regression-classifier-Accuracy
+        valueFrom: {path: /tmp/outputs/Accuracy/data}
+      - name: logistic-regression-classifier-Best_param
+        valueFrom: {path: /tmp/outputs/Best_param/data}
+      artifacts:
+      - {name: logistic-regression-classifier-Accuracy, path: /tmp/outputs/Accuracy/data}
+      - {name: logistic-regression-classifier-Best_param, path: /tmp/outputs/Best_param/data}
+      - {name: logistic-regression-classifier-Model, path: /tmp/outputs/Model/data}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.22
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"description": "Trains
+          a Logistic Regression Classifier", "implementation": {"container": {"command":
+          ["python", "logistic_regression.py", "--data", {"inputPath": "Data"}, "--model",
+          {"outputPath": "Model"}, "--accuracy", {"outputPath": "Accuracy"}, "--best_param",
+          {"outputPath": "Best_param"}], "image": "gianluca12galasso/logistic_regression"}},
+          "inputs": [{"description": "Path where data is stored.", "name": "Data",
+          "type": "LocalPath"}], "name": "Logistic Regression Classifier", "outputs":
+          [{"description": "Model", "name": "Model", "type": "LocalPath"}, {"description":
+          "Accuracy metric", "name": "Accuracy", "type": "Float"}, {"description":
+          "Best parameters for model", "name": "Best_param", "type": "String"}]}',
+        pipelines.kubeflow.org/component_ref: '{"digest": "4c04e44e33003966fd147e46977ed708d27427b6a5e83b60fc403a1933e5862a",
+          "url": "logistic_regression/logistic_regression.yaml"}'}
+  - name: random-forest-classifier
+    container:
+      args: []
+      command: [python, random_forest.py, --data, /tmp/inputs/Data/data, --model,
+        /tmp/outputs/Model/data, --accuracy, /tmp/outputs/Accuracy/data, --best_param,
+        /tmp/outputs/Best_param/data]
+      image: gianluca12galasso/random_forest
+    inputs:
+      artifacts:
+      - {name: load-data-function-Data, path: /tmp/inputs/Data/data}
+    outputs:
+      parameters:
+      - name: random-forest-classifier-Accuracy
+        valueFrom: {path: /tmp/outputs/Accuracy/data}
+      - name: random-forest-classifier-Best_param
+        valueFrom: {path: /tmp/outputs/Best_param/data}
+      artifacts:
+      - {name: random-forest-classifier-Accuracy, path: /tmp/outputs/Accuracy/data}
+      - {name: random-forest-classifier-Best_param, path: /tmp/outputs/Best_param/data}
+      - {name: random-forest-classifier-Model, path: /tmp/outputs/Model/data}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.22
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"description": "Trains
+          a  decision tree classifier", "implementation": {"container": {"command":
+          ["python", "random_forest.py", "--data", {"inputPath": "Data"}, "--model",
+          {"outputPath": "Model"}, "--accuracy", {"outputPath": "Accuracy"}, "--best_param",
+          {"outputPath": "Best_param"}], "image": "gianluca12galasso/random_forest"}},
+          "inputs": [{"description": "Path where data is stored.", "name": "Data",
+          "type": "LocalPath"}], "name": "Random Forest classifier", "outputs": [{"description":
+          "Model", "name": "Model", "type": "LocalPath"}, {"description": "Accuracy
+          metric", "name": "Accuracy", "type": "Float"}, {"description": "Best parameters
+          for model", "name": "Best_param", "type": "String"}]}', pipelines.kubeflow.org/component_ref: '{"digest":
+          "752e75db05dd8e8877e7255e5bc322d26f3f1fbc8317811cc7b3b5f4a92870ca", "url":
+          "random_forest/random_forest.yaml"}'}
+  - name: show-results
+    container:
+      args: [--decision-tree-accuracy, '{{inputs.parameters.decision-tree-classifier-Accuracy}}',
+        --decision-tree-best-param, '{{inputs.parameters.decision-tree-classifier-Best_param}}',
+        --logistic-regression-accuracy, '{{inputs.parameters.logistic-regression-classifier-Accuracy}}',
+        --logistic-regression-best-param, '{{inputs.parameters.logistic-regression-classifier-Best_param}}',
+        --random-forest-accuracy, '{{inputs.parameters.random-forest-classifier-Accuracy}}',
+        --random-forest-best-param, '{{inputs.parameters.random-forest-classifier-Best_param}}']
+      command:
+      - sh
+      - -ec
+      - |
+        program_path=$(mktemp)
+        printf "%s" "$0" > "$program_path"
+        python3 -u "$program_path" "$@"
+      - "def show_results(decision_tree_accuracy, \n                 decision_tree_best_param,\
+        \ \n                 logistic_regression_accuracy, \n                 logistic_regression_best_param,\
+        \ \n                 random_forest_accuracy, \n                 random_forest_best_param):\n\
+        \n    # Given the outputs from decision_tree, logistic regression and random_forest\
+        \ components the results are shown.\n\n    print(f\"Decision tree (best_param):\
+        \ {decision_tree_best_param}\")\n    print(f\"Decision tree (accuracy): {decision_tree_accuracy}\"\
+        )\n    print(f\"Logistic regression (best_param): {logistic_regression_best_param}\"\
+        )\n    print(f\"Logistic regression (accuracy): {logistic_regression_accuracy}\"\
+        )\n    print(f\"Random forest (best_param): {random_forest_best_param}\")\n\
+        \    print(f\"Random forest (accuracy): {random_forest_accuracy}\")\n\nimport\
+        \ argparse\n_parser = argparse.ArgumentParser(prog='Show results', description='')\n\
+        _parser.add_argument(\"--decision-tree-accuracy\", dest=\"decision_tree_accuracy\"\
+        , type=float, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"\
+        --decision-tree-best-param\", dest=\"decision_tree_best_param\", type=str,\
+        \ required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--logistic-regression-accuracy\"\
+        , dest=\"logistic_regression_accuracy\", type=float, required=True, default=argparse.SUPPRESS)\n\
+        _parser.add_argument(\"--logistic-regression-best-param\", dest=\"logistic_regression_best_param\"\
+        , type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"\
+        --random-forest-accuracy\", dest=\"random_forest_accuracy\", type=float, required=True,\
+        \ default=argparse.SUPPRESS)\n_parser.add_argument(\"--random-forest-best-param\"\
+        , dest=\"random_forest_best_param\", type=str, required=True, default=argparse.SUPPRESS)\n\
+        _parsed_args = vars(_parser.parse_args())\n\n_outputs = show_results(**_parsed_args)\n"
+      image: python:3.7
+    inputs:
+      parameters:
+      - {name: decision-tree-classifier-Accuracy}
+      - {name: decision-tree-classifier-Best_param}
+      - {name: logistic-regression-classifier-Accuracy}
+      - {name: logistic-regression-classifier-Best_param}
+      - {name: random-forest-classifier-Accuracy}
+      - {name: random-forest-classifier-Best_param}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.22
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"implementation": {"container":
+          {"args": ["--decision-tree-accuracy", {"inputValue": "decision_tree_accuracy"},
+          "--decision-tree-best-param", {"inputValue": "decision_tree_best_param"},
+          "--logistic-regression-accuracy", {"inputValue": "logistic_regression_accuracy"},
+          "--logistic-regression-best-param", {"inputValue": "logistic_regression_best_param"},
+          "--random-forest-accuracy", {"inputValue": "random_forest_accuracy"}, "--random-forest-best-param",
+          {"inputValue": "random_forest_best_param"}], "command": ["sh", "-ec", "program_path=$(mktemp)\nprintf
+          \"%s\" \"$0\" > \"$program_path\"\npython3 -u \"$program_path\" \"$@\"\n",
+          "def show_results(decision_tree_accuracy, \n                 decision_tree_best_param,
+          \n                 logistic_regression_accuracy, \n                 logistic_regression_best_param,
+          \n                 random_forest_accuracy, \n                 random_forest_best_param):\n\n    #
+          Given the outputs from decision_tree, logistic regression and random_forest
+          components the results are shown.\n\n    print(f\"Decision tree (best_param):
+          {decision_tree_best_param}\")\n    print(f\"Decision tree (accuracy): {decision_tree_accuracy}\")\n    print(f\"Logistic
+          regression (best_param): {logistic_regression_best_param}\")\n    print(f\"Logistic
+          regression (accuracy): {logistic_regression_accuracy}\")\n    print(f\"Random
+          forest (best_param): {random_forest_best_param}\")\n    print(f\"Random
+          forest (accuracy): {random_forest_accuracy}\")\n\nimport argparse\n_parser
+          = argparse.ArgumentParser(prog=''Show results'', description='''')\n_parser.add_argument(\"--decision-tree-accuracy\",
+          dest=\"decision_tree_accuracy\", type=float, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--decision-tree-best-param\",
+          dest=\"decision_tree_best_param\", type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--logistic-regression-accuracy\",
+          dest=\"logistic_regression_accuracy\", type=float, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--logistic-regression-best-param\",
+          dest=\"logistic_regression_best_param\", type=str, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--random-forest-accuracy\",
+          dest=\"random_forest_accuracy\", type=float, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--random-forest-best-param\",
+          dest=\"random_forest_best_param\", type=str, required=True, default=argparse.SUPPRESS)\n_parsed_args
+          = vars(_parser.parse_args())\n\n_outputs = show_results(**_parsed_args)\n"],
+          "image": "python:3.7"}}, "inputs": [{"name": "decision_tree_accuracy", "type":
+          "Float"}, {"name": "decision_tree_best_param", "type": "String"}, {"name":
+          "logistic_regression_accuracy", "type": "Float"}, {"name": "logistic_regression_best_param",
+          "type": "String"}, {"name": "random_forest_accuracy", "type": "Float"},
+          {"name": "random_forest_best_param", "type": "String"}], "name": "Show results"}',
+        pipelines.kubeflow.org/component_ref: '{}', pipelines.kubeflow.org/arguments.parameters: '{"decision_tree_accuracy":
+          "{{inputs.parameters.decision-tree-classifier-Accuracy}}", "decision_tree_best_param":
+          "{{inputs.parameters.decision-tree-classifier-Best_param}}", "logistic_regression_accuracy":
+          "{{inputs.parameters.logistic-regression-classifier-Accuracy}}", "logistic_regression_best_param":
+          "{{inputs.parameters.logistic-regression-classifier-Best_param}}", "random_forest_accuracy":
+          "{{inputs.parameters.random-forest-classifier-Accuracy}}", "random_forest_best_param":
+          "{{inputs.parameters.random-forest-classifier-Best_param}}"}'}
+  arguments:
+    parameters: []
+  serviceAccountName: pipeline-runner

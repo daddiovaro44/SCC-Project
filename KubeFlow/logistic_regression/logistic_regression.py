@@ -1,12 +1,11 @@
 import json
-
 import argparse
 from pathlib import Path
-
 from sklearn.metrics import accuracy_score
 from sklearn.linear_model import LogisticRegression
 from joblib import dump
 from sklearn.model_selection import GridSearchCV
+
 def _logistic_regression(args):
 
     # Open and reads file "data"
@@ -42,27 +41,36 @@ def _logistic_regression(args):
 
     # Get the best parameters from the grid search
     best_params = grid_search.best_params_
-    print("Best Parameters:", best_params)
 
     # Get predictions using the best model
     y_pred = grid_search.predict(x_test)
     
     # Get accuracy
     accuracy = accuracy_score(y_test, y_pred)
-    print("Accuracy:", accuracy)
 
     # Save the best model
     dump(grid_search.best_estimator_, args.model)
-
+    
+    with open(args.accuracy, 'w') as accuracy_file:
+        accuracy_file.write(str(accuracy))
+    
+    with open(args.best_param, 'w') as accuracy_file:
+        accuracy_file.write(str(best_params)) 
+        
 if __name__ == '__main__':
+
     # Defining and parsing the command-line arguments
     parser = argparse.ArgumentParser(description='My program description')
     parser.add_argument('--data', type=str)
+    parser.add_argument('--accuracy', type=str)
     parser.add_argument('--model', type=str)
-
+    parser.add_argument('--best_param', type=str)
+    
     args = parser.parse_args()
 
     # Creating the directory where the output file will be created (the directory may or may not exist).
     Path(args.model).parent.mkdir(parents=True, exist_ok=True)
+    Path(args.accuracy).parent.mkdir(parents=True, exist_ok=True)
+    Path(args.best_param).parent.mkdir(parents=True, exist_ok=True)
     
     _logistic_regression(args)

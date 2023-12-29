@@ -2,19 +2,28 @@ name: Decision Tree classifier
 description: Trains a  decision tree classifier
 
 inputs:
-- {name: Data, type: LocalPath, description: 'Path where data is stored.'}
+  - { name: Data, type: LocalPath, description: "Path where data is stored." }
 outputs:
-- {name: Model, type: LocalPath, description: 'model'}
+  - { name: Model, type: LocalPath, description: "model" }
+  - { name: Accuracy, type: Float, description: "Accuracy metric" }
+  - { name: Best_param, type: String, description: "Best parameters for model" }
 implementation:
   container:
     image: gianluca12galasso/decision_tree
-    command: [
-      python, decision_tree.py,
+    command:
+      [
+        python,
+        decision_tree.py,
 
-      --data,
-      {inputPath: Data},
-      
-      --model,
-      {outputPath: Model}
+        --data,
+        { inputPath: Data },
 
-    ]
+        --model,
+        { outputPath: Model },
+
+        --accuracy,
+        { outputPath: Accuracy },
+
+        --best_param,
+        { outputPath: Best_param },
+      ]

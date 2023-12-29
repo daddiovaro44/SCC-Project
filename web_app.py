@@ -1,8 +1,6 @@
 import streamlit as st
 from joblib import load
 import pandas as pd
-from PIL import Image
-import csv
 
 # @st.cache_data
 def load_model(model_path):
@@ -12,7 +10,6 @@ def load_model(model_path):
 def inference(row, model, feat_cols):
     features = pd.DataFrame([row], columns = feat_cols)
     
-    # prediction = int(model.predict(features))
     prediction = model.predict(features)
     prediction = int(prediction.item(0))
     
@@ -65,6 +62,6 @@ if (st.button('Guess Tyre to Start the race with')):
     feat_cols = ['TyreLife', 'Position', 'GridPosition', 'Round', 'Year', 'AirTemp', 
                  'Humidity', 'Pressure', 'Rainfall', 'TrackTemp', 'WindSpeed']
 
-    model = load_model('./models/logisticregression.joblib')
+    model = load_model('./model/model.joblib')
     result = inference(row, model, feat_cols)
     st.write(result)
