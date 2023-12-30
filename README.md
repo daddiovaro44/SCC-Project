@@ -38,7 +38,7 @@ streamlit run web_app.py
 
 ### Docker
 
-The container is already uploaded on [Docker Hub](https://hub.docker.com/repositories/damiov) with the name `formula1`
+The container is already uploaded on [Docker Hub](https://hub.docker.com/repositories/damiov) with the name `formula1` using a model based on random forest training model which obtained 0.7875 of accuracy
 
 ### Kind
 

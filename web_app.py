@@ -2,7 +2,6 @@ import streamlit as st
 from joblib import load
 import pandas as pd
 
-# @st.cache_data
 def load_model(model_path):
     model = load(model_path)
     return model
@@ -40,12 +39,12 @@ tyrelife = st.sidebar.selectbox('Choose tyre age', laps)
 position = st.sidebar.selectbox('Choose finish grid position', positions)
 gridposition = st.sidebar.selectbox('Choose starding grid position', positions)
 
-year = st.sidebar.selectbox('Choose year', ('2019', '2020', '2021', '2022', '2023'))
+# In order to predict 2024 race starts
+year = '2024'
 
 gran_prix = pd.read_csv('./data/gran_prix.csv')
-races = gran_prix[year]
-round_name = st.sidebar.selectbox('Choose race', races)
-round = (gran_prix.index[gran_prix[year]==round_name]+1).item()
+round_name = st.sidebar.selectbox('Choose race', gran_prix['EventName'])
+round = (gran_prix.index[gran_prix['EventName']==round_name]+1).item()
 
 airtemp = st.sidebar.slider('Air temperature in Celsius', min_value=1.0, max_value=40.0, value=35.5, step=0.1)
 humidity = st.sidebar.slider('Humidity %', min_value=0.0, max_value=100.0, step=0.1)
