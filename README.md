@@ -60,8 +60,8 @@ This will create a Kubernetes cluster with one control-plane node and three work
 Then to deploy the Formula1 Compound Web App is needed to run the following commands:
 
 ```
-kubectl create --filename k8s_formula1_deployment.yaml
-kubectl create --filename k8s_formula1_autoscale.yaml
+kubectl create --filename=k8s_formula1_deployment.yaml
+kubectl create --filename=k8s_formula1_autoscale.yaml
 ```
 
 These commands will run the actual deployment of the web application on the previous created Kubernetes cluster and the autoscaling configuration.
