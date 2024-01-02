@@ -1,0 +1,142 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Workflow
+metadata:
+  generateName: f1-pipeline-retraining-
+  annotations: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.22, pipelines.kubeflow.org/pipeline_compilation_time: '2024-01-02T12:08:51.814849',
+    pipelines.kubeflow.org/pipeline_spec: '{"description": "Pipeline for retraing
+      best model of F1 classification problem.", "name": "F1 Pipeline retraining"}'}
+  labels: {pipelines.kubeflow.org/kfp_sdk_version: 1.8.22}
+spec:
+  entrypoint: f1-pipeline-retraining
+  templates:
+  - name: f1-pipeline-retraining
+    dag:
+      tasks:
+      - {name: load-data-function, template: load-data-function}
+      - name: random-forest-classifier
+        template: random-forest-classifier
+        dependencies: [load-data-function]
+        arguments:
+          artifacts:
+          - {name: load-data-function-Data, from: '{{tasks.load-data-function.outputs.artifacts.load-data-function-Data}}'}
+      - name: show-results
+        template: show-results
+        dependencies: [random-forest-classifier]
+        arguments:
+          parameters:
+          - {name: random-forest-classifier-Accuracy, value: '{{tasks.random-forest-classifier.outputs.parameters.random-forest-classifier-Accuracy}}'}
+          - {name: random-forest-classifier-Best_param, value: '{{tasks.random-forest-classifier.outputs.parameters.random-forest-classifier-Best_param}}'}
+  - name: load-data-function
+    container:
+      args: []
+      command: [python, load_data_retraining.py, --data, /tmp/outputs/Data/data]
+      image: gianluca12galasso/load_data_retraining
+    outputs:
+      artifacts:
+      - {name: load-data-function-Data, path: /tmp/outputs/Data/data}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.22
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"description": "Load
+          data from local dataset", "implementation": {"container": {"command": ["python",
+          "load_data_retraining.py", "--data", {"outputPath": "Data"}], "image": "gianluca12galasso/load_data_retraining"}},
+          "name": "Load Data Function", "outputs": [{"description": "Path where data
+          will be stored.", "name": "Data", "type": "LocalPath"}]}', pipelines.kubeflow.org/component_ref: '{"digest":
+          "bea77457a9314cc8510e7eaf031f2c6e5244e980b0d7499fa7daa9d6f819cec6", "url":
+          "load_data/load_data_retraining.yaml"}'}
+  - name: random-forest-classifier
+    container:
+      args: []
+      command: [python, random_forest_retraining.py, --data, /tmp/inputs/Data/data,
+        --model, /tmp/outputs/Model/data, --accuracy, /tmp/outputs/Accuracy/data,
+        --best_param, /tmp/outputs/Best_param/data]
+      image: gianluca12galasso/random_forest_retraining
+    inputs:
+      artifacts:
+      - {name: load-data-function-Data, path: /tmp/inputs/Data/data}
+    outputs:
+      parameters:
+      - name: random-forest-classifier-Accuracy
+        valueFrom: {path: /tmp/outputs/Accuracy/data}
+      - name: random-forest-classifier-Best_param
+        valueFrom: {path: /tmp/outputs/Best_param/data}
+      artifacts:
+      - {name: random-forest-classifier-Accuracy, path: /tmp/outputs/Accuracy/data}
+      - {name: random-forest-classifier-Best_param, path: /tmp/outputs/Best_param/data}
+      - {name: random-forest-classifier-Model, path: /tmp/outputs/Model/data}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.22
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"description": "Trains
+          a  decision tree classifier", "implementation": {"container": {"command":
+          ["python", "random_forest_retraining.py", "--data", {"inputPath": "Data"},
+          "--model", {"outputPath": "Model"}, "--accuracy", {"outputPath": "Accuracy"},
+          "--best_param", {"outputPath": "Best_param"}], "image": "gianluca12galasso/random_forest_retraining"}},
+          "inputs": [{"description": "Path where data is stored.", "name": "Data",
+          "type": "LocalPath"}], "name": "Random Forest classifier", "outputs": [{"description":
+          "Model", "name": "Model", "type": "LocalPath"}, {"description": "Accuracy
+          metric", "name": "Accuracy", "type": "Float"}, {"description": "Best parameters
+          for model", "name": "Best_param", "type": "String"}]}', pipelines.kubeflow.org/component_ref: '{"digest":
+          "a798580bd457a4d0671eeec33e8d4bb811fe9d9075f5d4b609112760c3249a18", "url":
+          "random_forest/random_forest_retraining.yaml"}'}
+  - name: show-results
+    container:
+      args: [--random-forest-accuracy, '{{inputs.parameters.random-forest-classifier-Accuracy}}',
+        --random-forest-best-param, '{{inputs.parameters.random-forest-classifier-Best_param}}']
+      command:
+      - sh
+      - -ec
+      - |
+        program_path=$(mktemp)
+        printf "%s" "$0" > "$program_path"
+        python3 -u "$program_path" "$@"
+      - |
+        def show_results(random_forest_accuracy, random_forest_best_param):
+
+            # Given the outputs from decision_tree and logistic regression components
+            # the results are shown.
+            print(f"Random forest (best_param): {random_forest_best_param}")
+            print(f"Random forest (accuracy): {random_forest_accuracy}")
+
+        import argparse
+        _parser = argparse.ArgumentParser(prog='Show results', description='')
+        _parser.add_argument("--random-forest-accuracy", dest="random_forest_accuracy", type=float, required=True, default=argparse.SUPPRESS)
+        _parser.add_argument("--random-forest-best-param", dest="random_forest_best_param", type=str, required=True, default=argparse.SUPPRESS)
+        _parsed_args = vars(_parser.parse_args())
+
+        _outputs = show_results(**_parsed_args)
+      image: python:3.7
+    inputs:
+      parameters:
+      - {name: random-forest-classifier-Accuracy}
+      - {name: random-forest-classifier-Best_param}
+    metadata:
+      labels:
+        pipelines.kubeflow.org/kfp_sdk_version: 1.8.22
+        pipelines.kubeflow.org/pipeline-sdk-type: kfp
+        pipelines.kubeflow.org/enable_caching: "true"
+      annotations: {pipelines.kubeflow.org/component_spec: '{"implementation": {"container":
+          {"args": ["--random-forest-accuracy", {"inputValue": "random_forest_accuracy"},
+          "--random-forest-best-param", {"inputValue": "random_forest_best_param"}],
+          "command": ["sh", "-ec", "program_path=$(mktemp)\nprintf \"%s\" \"$0\" >
+          \"$program_path\"\npython3 -u \"$program_path\" \"$@\"\n", "def show_results(random_forest_accuracy,
+          random_forest_best_param):\n\n    # Given the outputs from decision_tree
+          and logistic regression components\n    # the results are shown.\n    print(f\"Random
+          forest (best_param): {random_forest_best_param}\")\n    print(f\"Random
+          forest (accuracy): {random_forest_accuracy}\")\n\nimport argparse\n_parser
+          = argparse.ArgumentParser(prog=''Show results'', description='''')\n_parser.add_argument(\"--random-forest-accuracy\",
+          dest=\"random_forest_accuracy\", type=float, required=True, default=argparse.SUPPRESS)\n_parser.add_argument(\"--random-forest-best-param\",
+          dest=\"random_forest_best_param\", type=str, required=True, default=argparse.SUPPRESS)\n_parsed_args
+          = vars(_parser.parse_args())\n\n_outputs = show_results(**_parsed_args)\n"],
+          "image": "python:3.7"}}, "inputs": [{"name": "random_forest_accuracy", "type":
+          "Float"}, {"name": "random_forest_best_param", "type": "String"}], "name":
+          "Show results"}', pipelines.kubeflow.org/component_ref: '{}', pipelines.kubeflow.org/arguments.parameters: '{"random_forest_accuracy":
+          "{{inputs.parameters.random-forest-classifier-Accuracy}}", "random_forest_best_param":
+          "{{inputs.parameters.random-forest-classifier-Best_param}}"}'}
+  arguments:
+    parameters: []
+  serviceAccountName: pipeline-runner
