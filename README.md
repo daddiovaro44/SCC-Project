@@ -4,11 +4,11 @@ Prediction application which can be used from any racing team using different ty
 
 It is called Formula 1 because uses a dataset based on 2019-present kind of compound used for the highest motorsport category: soft, medium, hard, intermediate and wet.
 
-To use it for you how kind of racing change the dataset and execute the preparation of the data to match with the code of this repository.
+To use it for your kind tyre compound change the dataset and execute the preparation of the data to match with the code of this repository.
 
 ## Data
 
-Data used in this application are collected from [Fast-F1](https://github.com/theOehrly/Fast-F1/tree/master) repository. We decided to use part of this data, information from 2019 to 2023 are retrived, filtered and ready to use. Then are saved in the `./data/` directory.
+Data used in this application are collected from [Fast-F1](https://github.com/theOehrly/Fast-F1/tree/master) repository. We decided to use part of this data, information from 2019 to 2023 are retrived, filtered and ready to use. Then are saved in the `./data` directory.
 
 ## Local Execution of the Web App
 

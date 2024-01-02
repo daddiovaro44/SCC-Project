@@ -11,7 +11,6 @@ def show_results(decision_tree_accuracy: float,
                  random_forest_best_param: str) -> None:
 
     # Given the outputs from decision_tree, logistic regression and random_forest components the results are shown.
-    
     print(f"Decision tree (best_param): {decision_tree_best_param}")
     print(f"Decision tree (accuracy): {decision_tree_accuracy}")
     print(f"Logistic regression (best_param): {logistic_regression_best_param}")

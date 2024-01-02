@@ -60,7 +60,7 @@ def _decision_tree(args):
 if __name__ == '__main__':
 
     # Defining and parsing the command-line arguments
-    parser = argparse.ArgumentParser(description='My program description')
+    parser = argparse.ArgumentParser(description='Decision Tree training')
     parser.add_argument('--data', type=str)
     parser.add_argument('--accuracy', type=str)
     parser.add_argument('--model', type=str)
