@@ -64,7 +64,21 @@ kubectl create --filename=k8s_formula1_deployment.yaml
 kubectl create --filename=k8s_formula1_autoscale.yaml
 ```
 
-These commands will run the actual deployment of the web application on the previous created Kubernetes cluster and the autoscaling configuration.
+These commands will run the actual deployment of the web application on the previous created Kubernetes cluster and the horizontal autoscaling configuration.
+
+Instead, to run the vertical autoscaling is needed to have in the system the kubernetes autoscaler repository, othwerwise:
+
+```
+git clone https://github.com/kubernetes/autoscaler.git
+cd autoscaler/vertical-pod-autoscaler/
+./hack/vpa-up.sh
+```
+
+Then to have automatically computed resource requirements execute the command:
+
+```
+kubectl create --filename=k8s_formula1_vertical_autoscale.yaml
+```
 
 ### View Web Application
 
@@ -115,6 +129,10 @@ After go to `Pipelines` section, click on `Upload pipeline` button and
 After the upload of a pipeline, to execute it click on the `Create run` button, then press `Start` and wait the end. After to get results click on `Show results` component and in the "Output Artifacts" section you get accuracy and parameters of the best models. Instead, to get the retrained model click on `(Decision tree, Logistic Regression, Random Forest) classifier`, go to "Output Artifacts" to get all data about the best model, including the model dump.
 
 The model you get, renamed as `model.joblib` and put in the `model` directory can be used in the deployment of the web application.
+
+## Notes
+
+Where is required the `scikit-learn` package is used the `1.3.0` version for compatibility reason with `load` function of `joblib` library.
 
 ## Authors
 
