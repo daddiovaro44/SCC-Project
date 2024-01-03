@@ -53,7 +53,7 @@ pressure = st.sidebar.slider('Pressure in mbar', min_value=900.0, max_value=1100
 rain = int(st.sidebar.checkbox('Rain'))
 
 tracktemp = st.sidebar.slider('Track temperature in Celsius', min_value=10.0, max_value=60.0, value=35.5, step=0.1)
-windspeed = st.sidebar.slider('Wind spee in m/s', min_value=1.0, max_value=10.0, step=0.1)
+windspeed = st.sidebar.slider('Wind speed in m/s', min_value=1.0, max_value=10.0, step=0.1)
 
 row = [tyrelife, position, gridposition, round, year, airtemp, humidity, pressure, rain, tracktemp, windspeed]
 
