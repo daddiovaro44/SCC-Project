@@ -61,6 +61,33 @@ kind create cluster --config=multinode-config-with-port-mapping.yaml --name=form
 
 This will create a Kubernetes cluster with one control-plane node and three worker node, with the exposed port on `localhost:30070`.
 
+To install the Kubernetes Dashboard are needed some files and to execute some code. First of all run:
+
+```
+kubectl apply -f https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0-beta8/aio/deploy/recommended.yaml
+```
+
+Then are needed the `dashboard-adminuser.yaml` file and the `cluster_rolebinding.yaml` file to create an user with necessary permissions. To apply this configurations:
+
+```
+kubectl apply -f dashboard-adminuser.yaml
+kubectl apply -f cluster_rolebinding.yaml
+```
+
+To get the token to have access to the dashboard run:
+
+```
+kubectl -n kubernetes-dashboard create token admin-user
+```
+
+Keep this token, and to access to the dashboard run:
+
+```
+kubectl proxy
+```
+
+Now, go to [Dashboard](http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/) and insert the token to get in the dashboard.
+
 Then to deploy the Formula1 Compound Web App is needed to run the following commands:
 
 ```
