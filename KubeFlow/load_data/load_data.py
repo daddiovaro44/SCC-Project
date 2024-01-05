@@ -35,8 +35,7 @@ if __name__ == '__main__':
     
     args = parser.parse_args()
     
-    # Creating the directory where the output file will be created 
-    # (the directory may or may not exist).
+    # Creating the directory where the output file will be created
     Path(args.data).parent.mkdir(parents=True, exist_ok=True)
 
     _load_data(args)

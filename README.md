@@ -10,6 +10,10 @@ To use it for your kind tyre compound change the dataset and execute the prepara
 
 Data used in this application are collected from [Fast-F1](https://github.com/theOehrly/Fast-F1/tree/master) repository. We decided to use part of this data, information from 2019 to 2023 are retrived, filtered and ready to use. Then are saved in the `./data` directory.
 
+In the `prepare_data.ipynb` file data are collected from the Fast-F1 library from 2019 to 2023. Then are selected only Compound, TyreLife, Position and GridPosition informations, instead about wheather are collected AirTemp, Humidity, Pressure, Rainfall, TrackTemp and WindSpeed. In addition are added year and round number, then saved in the `merged_results.csv`. In an other file are saved the round number and corresponding round name of the 2023 year.
+
+About `additional_data.csv` and `initial_training.csv` are the same data that are in the `merged_results.csv`, but from this are removed last 300 lines and inserted in `additional_data.csv`.
+
 ## Local Execution of the Web App
 
 ### Pre
@@ -90,6 +94,8 @@ http://localhost:30070
 
 ## Kubeflow
 
+Even in this case all the container are uploaded on [Docker Hub](https://hub.docker.com/repositories/gianluca12galasso).
+
 First thing to do, install Kubeflow Pipelines:
 
 ```
@@ -132,7 +138,7 @@ The model you get, renamed as `model.joblib` and put in the `model` directory ca
 
 ## Notes
 
-Where is required the `scikit-learn` package is used the `1.3.0` version for compatibility reason with `load` function of `joblib` library.
+Where is required the `scikit-learn` package is used the `1.3.0` version for compatibility reason with the `load` function of `joblib` library.
 
 ## Authors
 

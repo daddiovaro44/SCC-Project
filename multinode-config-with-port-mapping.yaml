@@ -8,8 +8,8 @@ nodes:
         hostPort: 30070
       - containerPort: 30020
         hostPort: 30010
-      - containerPort: 30030
-        hostPort: 30020
+      - containerPort: 30040
+        hostPort: 30030
   - role: worker
   - role: worker
   - role: worker

@@ -6,8 +6,7 @@ from kfp.components import func_to_container_op
 @func_to_container_op
 def show_results(random_forest_accuracy: float, random_forest_best_param: str) -> None:
 
-    # Given the outputs from decision_tree and logistic regression components
-    # the results are shown.
+    # Given the outputs from random_forest components the results are shown.
     print(f"Random forest (best_param): {random_forest_best_param}")
     print(f"Random forest (accuracy): {random_forest_accuracy}")
 

@@ -10,7 +10,7 @@ def show_results(decision_tree_accuracy: float,
                  random_forest_accuracy: float, 
                  random_forest_best_param: str) -> None:
 
-    # Given the outputs from decision_tree, logistic regression and random_forest components the results are shown.
+    # Given the outputs from decision_tree, logistic_regression and random_forest components the results are shown.
     print(f"Decision tree (best_param): {decision_tree_best_param}")
     print(f"Decision tree (accuracy): {decision_tree_accuracy}")
     print(f"Logistic regression (best_param): {logistic_regression_best_param}")
@@ -19,7 +19,7 @@ def show_results(decision_tree_accuracy: float,
     print(f"Random forest (accuracy): {random_forest_accuracy}")
 
 
-@dsl.pipeline(name='F1 Pipeline', description='Applies Decision Tree and Logistic Regression for F1 classification problem.')
+@dsl.pipeline(name='F1 Pipeline', description='Applies Decision Tree, Logistic Regression and Random Forest for F1 classification problem.')
 def F1pipeline():
 
     # Loads the yaml manifest for each component

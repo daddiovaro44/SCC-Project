@@ -41,14 +41,12 @@ def _random_forest(args):
 
     # Get the best parameters from the grid search
     best_params = grid_search.best_params_
-    #print("Best Parameters:", best_params)
 
     # Get predictions using the best model
     y_pred = grid_search.predict(x_test)
     
     # Get accuracy
     accuracy = accuracy_score(y_test, y_pred)
-    #print("Accuracy:", accuracy)
 
     # Save the best model
     dump(grid_search.best_estimator_, args.model)
@@ -70,7 +68,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    # Creating the directory where the output file will be created (the directory may or may not exist).
+    # Creating the directory where the output file will be created.
     Path(args.model).parent.mkdir(parents=True, exist_ok=True)
     Path(args.accuracy).parent.mkdir(parents=True, exist_ok=True)
     Path(args.best_param).parent.mkdir(parents=True, exist_ok=True)
